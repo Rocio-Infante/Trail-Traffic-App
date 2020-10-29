@@ -16,16 +16,19 @@ import {
   TouchableOpacity,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import secret from "../secrets";
 // import {useTheme} from '@react-navigation/native'
 
-export function MapPage() {
+export function MapPage({ route }) {
   const [dark, setDark] = useState(false);
   const toggleSwitch = () => setDark((prevState) => !prevState);
   const [trails, setTrails] = useState([]);
   const [heatMapStats, setHeatMapStats] = useState([]);
 
+  // const { userInfo } = route.params;
+
   useEffect(() => {
-    fetch("http://192.168.1.3:5001/api/getData")
+    fetch(`http://${secret.ip_address}:5001/api/getData`)
       .then((res) => res.json())
       .then((res) => {
         setHeatMapStats(res.heatMapStats);

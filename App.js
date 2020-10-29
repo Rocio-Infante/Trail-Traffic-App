@@ -19,6 +19,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { MapPage } from "./screens/MapPage.jsx";
 import { Splash } from "./screens/SplashLoginPage.jsx";
+import secret from "./secrets";
 
 // import {
 //   GoogleSignin,
@@ -30,20 +31,16 @@ import { Splash } from "./screens/SplashLoginPage.jsx";
 
 //========================================= FAVORITES PAGE ================================================//
 
-function Favorites({ navigation }) {
-  const [trails, setTrails] = useState([]);
-  const [like, setDislike] = useState({
-    0: true,
-    1: true,
-    2: true,
-    3: true,
-    4: true,
-  });
+function Favorites({ navigation, route }) {
+  const { userInfo } = route.params;
+  const [faves, setFaves] = useState([]);
 
   useEffect(() => {
-    fetch("http://192.168.1.3:5001/api/getData")
+    fetch(
+      `http://${secret.ip_address}:5001/api/getFaves?user_id=${userInfo.id}`
+    )
       .then((res) => res.json())
-      .then((res) => setTrails(res.trailNames))
+      .then((parsedRes) => setFaves(parsedRes))
       .catch((err) => console.log(err));
   }, []);
 
@@ -53,14 +50,14 @@ function Favorites({ navigation }) {
         <View style={styles.titleBar}>
           <Button
             title="Back to Map"
-            onPress={() => navigation.navigate("Map")}
+            onPress={() => navigation.navigate("Map", { userInfo })}
           />
           <Button title="Logout" onPress={() => navigation.navigate("Login")} />
         </View>
         <View style={{ alignSelf: "center" }}>
           <View style={styles.profileImage}>
             <Image
-              source={require("./assets/cat.jpg")}
+              source={{ uri: userInfo.photourl }}
               style={styles.image}
               resizeMode="center"
             ></Image>
@@ -76,13 +73,13 @@ function Favorites({ navigation }) {
         </View>
         <View style={styles.infoContainer}>
           <Text style={[styles.text, { fontWeight: "200", fontSize: 36 }]}>
-            Grumpy Cat
+            {userInfo.name}
           </Text>
         </View>
         <View style={styles.faveTitle}>
           <Text style={[styles.text, { fontSize: 24 }]}>Favorite Trails</Text>
         </View>
-        {trails.map((trail, i) => {
+        {faves.map((trail, i) => {
           return (
             <Card key={i}>
               <ListItem>
@@ -90,8 +87,7 @@ function Favorites({ navigation }) {
                 <Ionicons
                   key={i}
                   name="ios-heart"
-                  style={like ? styles.heartIconRed : styles.heartIconGray}
-                  onPress={() => setDislike(!like)}
+                  style={styles.heartIconRed}
                 />
               </ListItem>
             </Card>
