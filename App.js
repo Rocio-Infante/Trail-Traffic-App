@@ -34,6 +34,7 @@ import secret from "./secrets.js";
 function Favorites({ navigation, route }) {
   const { userInfo } = route.params;
   const [faves, setFaves] = useState([]);
+  const [like, setDislike] = useState(true);
 
   useEffect(() => {
     fetch(
@@ -87,7 +88,8 @@ function Favorites({ navigation, route }) {
                 <Ionicons
                   key={i}
                   name="ios-heart"
-                  style={styles.heartIconRed}
+                  style={like ? styles.heartIconRed : styles.heartIconGray}
+                  onPress={() => setDislike(!like)}
                 />
               </ListItem>
             </Card>
