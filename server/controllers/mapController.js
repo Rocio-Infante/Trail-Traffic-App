@@ -1,5 +1,5 @@
 const fetch = require("node-fetch");
-const secret = require("../secrets");
+const secret = require("../../secrets");
 
 const mapController = {};
 
@@ -42,51 +42,53 @@ mapController.getHeat = (req, res, next) => {
     //create a new promise for each location
     const trailDataPromise = new Promise((resolve, reject) => {
       //async operation: fetch request to API
-      fetch(`https://besttime.app/api/v1/forecasts/now?api_key_public=${publicKey}&venue_id=${locations[trail]}`)
-      .then((data) => {
-        data.json().then((parsedData) => {
-          // console.log('data returned from API', parsedData)
-          const trailName = parsedData.venue_info.venue_name;
-          const weight = conversion[parsedData.analysis.hour_analysis.intensity_nr];
-          const trailData = {
-            trailName,
-            heatMap: {
-              latitude: latlong[trail].latitude,
-              longitude: latlong[trail].longitude,
-              weight,
-            }
-          };
-          //when promise resolves, trailDataObj is returned
-          resolve(trailData);
+      fetch(
+        `https://besttime.app/api/v1/forecasts/now?api_key_public=${publicKey}&venue_id=${locations[trail]}`
+      )
+        .then((data) => {
+          data.json().then((parsedData) => {
+            // console.log('data returned from API', parsedData)
+            const trailName = parsedData.venue_info.venue_name;
+            const weight =
+              conversion[parsedData.analysis.hour_analysis.intensity_nr];
+            const trailData = {
+              trailName,
+              heatMap: {
+                latitude: latlong[trail].latitude,
+                longitude: latlong[trail].longitude,
+                weight,
+              },
+            };
+            //when promise resolves, trailDataObj is returned
+            resolve(trailData);
+          });
+        })
+        .catch((err) => {
+          return next(err);
         });
-      })
-      .catch((err) => {
-        return next(err);
-      })
-    })
+    });
     //push promises into array
-    trailDataArray.push(trailDataPromise)
+    trailDataArray.push(trailDataPromise);
   }
-  
+
   //this waits for all promises to resolve to trailDataObjs
   Promise.all(trailDataArray)
     //then that array is saved into an object with all location names
     .then((trailDataArray) => {
       const heatMapStats = [];
       const trailNames = [];
-      trailDataArray.forEach(dataObj => {
+      trailDataArray.forEach((dataObj) => {
         console.log(dataObj);
         heatMapStats.push(dataObj.heatMap);
         trailNames.push(dataObj.trailName);
-      })
-      const mapInfo = { 
-        heatMapStats, 
-        trailNames
-      }
+      });
+      const mapInfo = {
+        heatMapStats,
+        trailNames,
+      };
       res.locals.data = mapInfo;
     })
-    .then(() => next())
-
+    .then(() => next());
 };
 
 module.exports = mapController;
